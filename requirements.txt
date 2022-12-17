@@ -1,1 +1,1 @@
-gymnasium[mujoco]>=0.26.3
+gymnasium[mujoco]==0.26.3
