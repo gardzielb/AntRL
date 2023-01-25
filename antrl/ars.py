@@ -6,7 +6,7 @@ sys.modules["gym"] = gymnasium
 from sb3_contrib import ARS
 
 
-def train_ars(healthy_reward: float):
+def train_ars(healthy_reward: float, n_epochs: int, out_file: str):
 	env = gym.make('Ant-v4', healthy_reward = healthy_reward)
 	env.reset(seed = 2137)
 
@@ -20,5 +20,5 @@ def train_ars(healthy_reward: float):
 		device = 'cuda'
 	)
 
-	model.learn(total_timesteps = 5_000_000, progress_bar = True)
-	model.save(f'results/ARS/ant_ars_5M_h{healthy_reward}.zip')
+	model.learn(total_timesteps = n_epochs, progress_bar = True)
+	model.save(out_file)

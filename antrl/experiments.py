@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import gymnasium as gym
 import gymnasium
 import sys
+
+import pandas as pd
 
 sys.modules["gym"] = gymnasium
 from stable_baselines3.common.base_class import BaseAlgorithm
@@ -21,8 +24,12 @@ class TestResult:
 
 
 def test_algorithm(
-		algorithm: BaseAlgorithm, n_epochs: int, n_eval_episodes: int, save_algorithm: Optional[str] = None
+		algorithm: BaseAlgorithm, n_epochs: int, n_eval_episodes: int,
+		save_algorithm: Optional[Path] = None, seed = None
 ) -> TestResult:
+	if seed:
+		algorithm.set_random_seed(seed)
+
 	start_time = datetime.now()
 	algorithm.learn(total_timesteps = n_epochs, progress_bar = True)
 	training_time = datetime.now() - start_time
@@ -36,23 +43,22 @@ def test_algorithm(
 	return TestResult(mean_reward, reward_std, training_seconds = training_time.seconds)
 
 
-if __name__ == '__main__':
-	print(f'Testing ARS')
-	ars_env = gym.make('Ant-v4', healthy_reward = 0.95)
-	ars = ARS(
-		'LinearPolicy', ars_env,
-		alive_bonus_offset = -1,
-		delta_std = 0.025,
-		learning_rate = 0.015,
-		n_delta = 60,
-		n_top = 20,
-		device = 'cuda'
+def evaluate_model(path: str):
+	episode_rewards: dict[int, list[float]] = dict()
+
+	def callback(eval_globals, eval_locals):
+		episode_no = eval_globals['episode_counts'][0]
+		if episode_no in episode_rewards:
+			episode_rewards[episode_no].append(eval_globals['current_rewards'][0])
+		else:
+			episode_rewards[episode_no] = [eval_globals['current_rewards'][0]]
+
+	env = gym.make('Ant-v4')
+	env.reset(seed = 43)
+	model = SAC.load(path)
+	evaluate_policy(
+		model, env, return_episode_rewards = True, callback = callback,
+		deterministic = False, n_eval_episodes = 100
 	)
-	ars_result = test_algorithm(ars, n_epochs = 1_000_000, n_eval_episodes = 5)
 
-	print(f'Testing SAC')
-	sac_env = gym.make('Ant-v4', healthy_reward = 0.01)
-	sac = SAC("MlpPolicy", ars_env, learning_starts = 10_000)
-	sac_result = test_algorithm(sac, n_epochs = 100_000, n_eval_episodes = 5)
-
-	print(f'ARS result = {ars_result}, SAC result = {sac_result}')
+	return pd.DataFrame.from_dict(episode_rewards, orient = 'index').T
