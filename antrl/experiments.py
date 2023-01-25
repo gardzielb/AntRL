@@ -43,7 +43,7 @@ def test_algorithm(
 	return TestResult(mean_reward, reward_std, training_seconds = training_time.seconds)
 
 
-def evaluate_model(path: str):
+def evaluate_model(path: str, algorithm, seed: int, n_eval_episodes: int) -> pd.DataFrame:
 	episode_rewards: dict[int, list[float]] = dict()
 
 	def callback(eval_globals, eval_locals):
@@ -54,11 +54,11 @@ def evaluate_model(path: str):
 			episode_rewards[episode_no] = [eval_globals['current_rewards'][0]]
 
 	env = gym.make('Ant-v4')
-	env.reset(seed = 43)
-	model = SAC.load(path)
+	env.reset(seed = seed)
+	model = algorithm.load(path, env)
 	evaluate_policy(
 		model, env, return_episode_rewards = True, callback = callback,
-		deterministic = False, n_eval_episodes = 100
+		deterministic = False, n_eval_episodes = n_eval_episodes
 	)
 
 	return pd.DataFrame.from_dict(episode_rewards, orient = 'index').T
