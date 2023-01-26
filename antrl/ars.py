@@ -8,7 +8,7 @@ sys.modules["gym"] = gymnasium
 from sb3_contrib import ARS
 
 
-def train_ars(healthy_reward: float, n_delta: int, n_top: int, n_epochs: int, out_file: str, seed: int):
+def train_ars(healthy_reward: float, n_delta: int, n_top: int, n_steps: int, out_file: str, seed: int):
 	env = gym.make('Ant-v4', healthy_reward = healthy_reward)
 	env.reset(seed = seed)
 
@@ -22,7 +22,7 @@ def train_ars(healthy_reward: float, n_delta: int, n_top: int, n_epochs: int, ou
 		device = 'cuda'
 	)
 
-	model.learn(total_timesteps = n_epochs, progress_bar = True)
+	model.learn(total_timesteps = n_steps, progress_bar = True)
 	model.save(out_file)
 
 
@@ -37,13 +37,13 @@ def prepare_ars_models(out_dir: str):
 		(0.9, 60, 20, 5_000_000)
 	]
 
-	for healthy_reward, delta, top, epochs in configs:
-		print(f'Training ARS: healthy_reward = {healthy_reward}, delta = {delta}, top = {top}, epoch count = {epochs}')
-		file_name = f'{out_dir}/ars_d{delta}_t{top}_h{healthy_reward}_{epochs // 1_000_000}M.zip'
+	for healthy_reward, delta, top, steps in configs:
+		print(f'Training ARS: healthy_reward = {healthy_reward}, delta = {delta}, top = {top}, step count = {steps}')
+		file_name = f'{out_dir}/ars_d{delta}_t{top}_h{healthy_reward}_{steps // 1_000_000}M.zip'
 
 		start_time = datetime.now()
 		train_ars(
-			healthy_reward = 1.0, n_delta = delta, n_top = top, n_epochs = epochs, out_file = file_name, seed = 2137
+			healthy_reward = 1.0, n_delta = delta, n_top = top, n_steps = steps, out_file = file_name, seed = 2137
 		)
 
 		training_time = datetime.now() - start_time
