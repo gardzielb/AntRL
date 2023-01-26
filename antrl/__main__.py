@@ -12,14 +12,14 @@ from sb3_contrib.ars import ARS
 from antrl.experiments import evaluate_model
 from antrl.plot import plot_mean_and_std, plot_deaths
 from antrl.ars import train_ars, prepare_ars_models
-from antrl.sac import train_sac
+from antrl.sac import train_sac, prepare_sac_models
 
 
 def prepare(args):
 	if args.algorithm == 'ars':
 		prepare_ars_models(args.out_dir)
 	elif args.algorithm == 'sac':
-		pass
+		prepare_sac_models(args.out_dir)
 	else:
 		print(f'Unrecognized algorithm: {args.algorithm}')
 		exit(1)
@@ -29,11 +29,11 @@ def train(args):
 	if args.algorithm == 'ars':
 		train_ars(
 			healthy_reward = args.healthy_reward, n_delta = 40, n_top = 20,
-			n_epochs = args.n_timestamps, out_file = args.out_path, seed = args.seed
+			n_steps = args.n_timestamps, out_file = args.out_path, seed = args.seed
 		)
 	elif args.algorithm == 'sac':
 		train_sac(
-			healthy_reward = args.healthy_reward, n_epochs = args.n_timestamps,
+			healthy_reward = args.healthy_reward, ent_coef = 'auto', n_steps = args.n_timestamps,
 			seed = args.seed, out_file = args.out_path
 		)
 	else:
