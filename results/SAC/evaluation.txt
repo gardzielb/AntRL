@@ -1,4 +1,0 @@
-ant_1: 		mean = 862.57 	std = 57.82
-ant_2: 		mean = 392.97 	std = 416.05
-ant_4: 		mean = 2762.00 	std = 780.71
-ant_big: 	mean = 3102.16 	std = 1040.89
