@@ -1,3 +1,9 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+
 def plot_deaths(df, ax: plt.Axes, color = 'red'):
 	sns.set_theme()
 	with sns.axes_style("darkgrid"):
